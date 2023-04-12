@@ -1,21 +1,23 @@
-const express = require('express')
-const app = express()
+require('dotenv').config()
+require('./database/db')
 
-const routerAPI = require('./router.routes')
+const express = require('express')
+const morgan = require('morgan')
+const apiRoutes = require('./router/api.routes')
+
+const app = express()
 
 app.set('view engine', 'pug')
 
+app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-app.use((err, req, res, next) => {
-    console.log(err.message)
-    console.log(err.stack)
-    res.status(500).send('Connexion cassé')
+app.get(['/', '/api'], (_, res) => {
+    res.redirect('/api/v1')
 })
+app.use('/api/v1', apiRoutes)
 
-app.use('/api/', routerAPI)
-
-app.listen(3000, () => {
-    return console.log('start on http://localhost:3000/api')
-})
+app.listen(3000, () =>
+    console.log(`Serveur démarrer sur cette url: http://localhost:3000`),
+)
