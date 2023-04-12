@@ -1,14 +1,19 @@
 const mongoose = require('mongoose')
-const COLLECTION_NAME = process.env.MONGODB_COLLECTION_NAME
+const USER_COLLECTION_NAME = process.env.MONGODB_USER_COLLECTION_NAME
 
-const UserSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema(
     {
         email: {
             type: String,
             unique: true,
+            required: true,
+            trim: true,
+            lowercase: true,
         },
         password: {
             type: String,
+            required: true,
+            trim: true,
         },
     },
     {
@@ -16,4 +21,4 @@ const UserSchema = new mongoose.Schema(
     },
 )
 
-module.exports = mongoose.model(COLLECTION_NAME, UserSchema)
+module.exports = mongoose.model(USER_COLLECTION_NAME, userSchema)
