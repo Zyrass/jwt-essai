@@ -7,6 +7,9 @@ html(lang='fr')
   body
     h1 Connexion
 
+    if response
+      p #{response}
+
     form(action='/api/v1/signin', method='post')
       div
         label(for='email') Email

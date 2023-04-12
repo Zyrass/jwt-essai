@@ -48,6 +48,31 @@ const postSignUp = async (req, res) => {
     }
 }
 
+const postSignIn = async (req, res) => {
+    const { email, password } = req.body
+    const checkUser = await UserModel.findOne({ email })
+    if (checkUser !== null) {
+        // On vérifie si un utilisateur avec cet e-mail existe
+        const match = await bcrypt.compare(password, checkUser.password)
+        // On compare le mot de passe soumis avec le hash enregistré en base de données.
+
+        if (match) {
+            // Si les mots de passe correspondent, on redirige vers la page de profil
+            res.redirect(`/api/v1/profile/${checkUser._id}`)
+        } else {
+            // Sinon, on affiche un message d'erreur
+            res.render('signin', {
+                response: 'Mot de passe incorrect',
+            })
+        }
+    } else {
+        // Si l'utilisateur n'existe pas, on affiche un message d'erreur
+        res.render('signin', {
+            response: 'Utilisateur inexistant',
+        })
+    }
+}
+
 const getSignIn = (req, res) => {
     res.render('signin')
 }
@@ -64,4 +89,5 @@ module.exports = {
     getSignUp,
     getLogout,
     postSignUp,
+    postSignIn,
 }

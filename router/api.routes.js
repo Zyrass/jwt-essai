@@ -9,5 +9,6 @@ router.get('/profile/:id', UserController.getProfile)
 router.get('/logout', UserController.getHome)
 
 router.post('/signup', UserController.postSignUp)
+router.post('/signin', UserController.postSignIn)
 
 module.exports = router
