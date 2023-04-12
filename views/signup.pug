@@ -5,6 +5,10 @@ html(lang='fr')
     title Inscription
   body
     h1 Inscription
+
+    if response
+      p #{response}
+
     form(action='/api/v1/signup', method='post')
       div
         label(for='email') Email

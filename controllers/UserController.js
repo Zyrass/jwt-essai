@@ -22,19 +22,30 @@ const getSignUp = (req, res) => {
 // Elle récupère l'email et le mot de passe, crée un nouvel utilisateur avec l'email récupéré,
 // hash le mot de passe en utilisant bcrypt, enregistre l'utilisateur en base de données,
 // puis redirige l'utilisateur vers la page de connexion.
-const postSignUp = (req, res) => {
+const postSignUp = async (req, res) => {
     const { email, password } = req.body
 
-    const newUser = new UserModel({
+    const checkUser = await UserModel.findOne({ email }) // Il faut utiliser `findOne` plutôt que `find`, car `find` renvoie un tableau et non un objet unique.
+
+    console.log({
+        checkUser,
         email,
     })
 
-    bcrypt.hash(password, 10, (err, hash) => {
-        if (err) throw err // Si une erreur survient lors de la création du hash, on la lance avec throw err.
+    // On vérifie si l'objet checkUser existe
+    if (checkUser) {
+        res.render('signup', {
+            response: 'Cet email existe déjà',
+        })
+    } else {
+        const newUser = new UserModel({
+            email,
+        })
+        const hash = await bcrypt.hash(password, 10) // On utilise `await` pour que le hash soit créé avant de poursuivre l'enregistrement.
         newUser.password = hash // On stocke le hash du mot de passe dans l'objet newUser, qui représente l'utilisateur à enregistrer.
-        newUser.save()
+        await newUser.save() // On utilise `await` pour que la sauvegarde soit complétée avant de poursuivre.
         res.redirect('/api/v1/signin')
-    })
+    }
 }
 
 const getSignIn = (req, res) => {
