@@ -8,4 +8,6 @@ router.get('/profile', UserController.getRedirectProfile)
 router.get('/profile/:id', UserController.getProfile)
 router.get('/logout', UserController.getHome)
 
+router.post('/signup', UserController.postSignUp)
+
 module.exports = router
