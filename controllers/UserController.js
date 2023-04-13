@@ -52,13 +52,15 @@ const postSignUp = async (req, res) => {
 
 const postSignIn = async (req, res) => {
     const { email, password } = req.body
+    // Recherche l'utilisateur dans la base de données
     const checkUser = await UserModel.findOne({ email })
 
     if (checkUser !== null) {
+        // Vérifie que le mot de passe correspond à celui stocké dans la base de données
         const matchPassword = await bcrypt.compare(password, checkUser.password)
 
         if (matchPassword) {
-            // Génère un token JWT et stocke-le dans un cookie nommé "access_token"
+            // Si le mot de passe correspond, génère un token JWT et le stocke dans un cookie nommé "access_token"
             const tokenJWT = jwt.sign(
                 {
                     _id: checkUser._id,
@@ -70,15 +72,16 @@ const postSignIn = async (req, res) => {
                 },
             )
             res.cookie('access_token', tokenJWT)
-            // res.send('Vous êtes maintenant connecté');
-
+            // Redirige vers la page de profil de l'utilisateur
             res.redirect(`/api/v1/profile/${checkUser._id}`)
         } else {
+            // Si le mot de passe ne correspond pas, renvoie une erreur 401 et affiche un message d'erreur
             res.status(401).render('signin', {
                 response: 'Mot de passe incorrect',
             })
         }
     } else {
+        // Si l'utilisateur n'existe pas, renvoie une erreur 401 et affiche un message d'erreur
         res.status(401).render('signin', {
             response: 'Utilisateur inexistant',
         })
