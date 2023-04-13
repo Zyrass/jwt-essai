@@ -1,6 +1,7 @@
 require('dotenv').config()
 require('./database/db')
 
+const cookieParser = require('cookie-parser')
 const express = require('express')
 const morgan = require('morgan')
 const apiRoutes = require('./router/api.routes')
@@ -9,6 +10,7 @@ const app = express()
 
 app.set('view engine', 'pug')
 
+app.use(cookieParser())
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))

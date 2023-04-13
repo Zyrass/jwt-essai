@@ -3,11 +3,13 @@ const jwt = require('jsonwebtoken')
 const authenticated = (req, res, next) => {
     // Récupérer le token d'authentification dans l'en-tête de la requête
     const authHeader = req.headers.authorization
-    const token = authHeader && authHeader.split(' ')[1]
+    console.log(authHeader)
+    const token = req.cookies('jwt')
+    console.log('authenticated', token)
 
     // Si le token n'est pas présent dans l'en-tête, renvoyer une erreur
     if (!token) {
-        return res.status(401).json({ error: 'Token missing' })
+        return res.status(401).json({ error: 'Token is missing' })
     }
 
     try {

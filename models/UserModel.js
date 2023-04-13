@@ -3,6 +3,9 @@ const USER_COLLECTION_NAME = process.env.MONGODB_USER_COLLECTION_NAME
 
 const userSchema = new mongoose.Schema(
     {
+        username: {
+            type: String,
+        },
         email: {
             type: String,
             unique: true,

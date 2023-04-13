@@ -1,9 +1,11 @@
 const UserModel = require('../models/UserModel')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 const getHome = (req, res) => {
     res.render('index')
 }
+
 const getRedirectProfile = (req, res) => {
     res.redirect('/api/v1/signin')
 }
@@ -50,6 +52,7 @@ const postSignUp = async (req, res) => {
 
 const postSignIn = async (req, res) => {
     const { email, password } = req.body
+
     const checkUser = await UserModel.findOne({ email })
     if (checkUser !== null) {
         // On vérifie si un utilisateur avec cet e-mail existe
@@ -57,17 +60,36 @@ const postSignIn = async (req, res) => {
         // On compare le mot de passe soumis avec le hash enregistré en base de données.
 
         if (match) {
-            // Si les mots de passe correspondent, on redirige vers la page de profil
+            // Si les informations d'identification sont valides,
+            // créer un token JWT
+            const token = jwt.sign(
+                {
+                    _id: checkUser._id,
+                    email: checkUser.email,
+                },
+                process.env.JWT_SECRET,
+                {
+                    expiresIn: '1h',
+                },
+            )
+
+            req.cookie('jwt', token)
+            // // Envoyer le token JWT en réponse à la requête
+            // res.json({
+            //     checkUser,
+            //     token,
+            // })
+            // console.log(res.cookie('token'))
             res.redirect(`/api/v1/profile/${checkUser._id}`)
         } else {
             // Sinon, on affiche un message d'erreur
-            res.render('signin', {
+            res.status(401).render('signin', {
                 response: 'Mot de passe incorrect',
             })
         }
     } else {
         // Si l'utilisateur n'existe pas, on affiche un message d'erreur
-        res.render('signin', {
+        res.status(401).render('signin', {
             response: 'Utilisateur inexistant',
         })
     }
@@ -80,7 +102,6 @@ const getSignIn = (req, res) => {
 const getLogout = (req, res) => {
     res.redirect('/api/v1')
 }
-
 module.exports = {
     getHome,
     getRedirectProfile,
