@@ -2,25 +2,15 @@ const jwt = require('jsonwebtoken')
 
 const authenticated = (req, res, next) => {
     // Récupérer le token d'authentification dans l'en-tête de la requête
-    const authHeader = req.headers.authorization
-    console.log(authHeader)
-    const token = req.cookies('jwt')
-    console.log('authenticated', token)
+    const token = req.cookies.access_token
+    //console.log('authenticated', token)
 
-    // Si le token n'est pas présent dans l'en-tête, renvoyer une erreur
-    if (!token) {
-        return res.status(401).json({ error: 'Token is missing' })
-    }
+    if (!token) return res.status(401).json({ error: 'Token is missing' })
 
     try {
-        // Vérifier la validité du token
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
-
-        // Ajouter les informations de l'utilisateur à la requête pour
-        // que les routes suivantes puissent y accéder
         req.user = decoded
-
-        // Appeler la fonction suivante (généralement une route) dans la chaîne de middlewares
+        res.cookie('userID', req.user._id)
         next()
     } catch (error) {
         // En cas d'erreur, renvoyer une erreur 401

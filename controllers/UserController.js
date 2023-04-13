@@ -2,22 +2,22 @@ const UserModel = require('../models/UserModel')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
-const getHome = (req, res) => {
-    res.render('index')
-}
-
-const getRedirectProfile = (req, res) => {
-    res.redirect('/api/v1/signin')
-}
+const getHome = (req, res) => res.render('index')
+const getRedirectProfile = (req, res) => res.redirect('/api/v1/signin')
 
 const getProfile = (req, res) => {
+    console.log(req.user)
     res.render('profile', {
         id: req.params.id,
+        email: req.user.email,
     })
 }
 
 const getSignUp = (req, res) => {
-    res.render('signup')
+    // console.log('getSignup, req.cookies.userID : ', req.cookies.userID)
+    if (req.cookies.access_token)
+        res.redirect(`/api/v1/profile/${req.cookies.userID}`)
+    else res.render('signup')
 }
 
 // Cette fonction est exécutée lorsqu'un utilisateur soumet le formulaire d'inscription.
@@ -52,17 +52,14 @@ const postSignUp = async (req, res) => {
 
 const postSignIn = async (req, res) => {
     const { email, password } = req.body
-
     const checkUser = await UserModel.findOne({ email })
-    if (checkUser !== null) {
-        // On vérifie si un utilisateur avec cet e-mail existe
-        const match = await bcrypt.compare(password, checkUser.password)
-        // On compare le mot de passe soumis avec le hash enregistré en base de données.
 
-        if (match) {
-            // Si les informations d'identification sont valides,
-            // créer un token JWT
-            const token = jwt.sign(
+    if (checkUser !== null) {
+        const matchPassword = await bcrypt.compare(password, checkUser.password)
+
+        if (matchPassword) {
+            // Génère un token JWT et stocke-le dans un cookie nommé "access_token"
+            const tokenJWT = jwt.sign(
                 {
                     _id: checkUser._id,
                     email: checkUser.email,
@@ -72,23 +69,16 @@ const postSignIn = async (req, res) => {
                     expiresIn: '1h',
                 },
             )
+            res.cookie('access_token', tokenJWT)
+            // res.send('Vous êtes maintenant connecté');
 
-            req.cookie('jwt', token)
-            // // Envoyer le token JWT en réponse à la requête
-            // res.json({
-            //     checkUser,
-            //     token,
-            // })
-            // console.log(res.cookie('token'))
             res.redirect(`/api/v1/profile/${checkUser._id}`)
         } else {
-            // Sinon, on affiche un message d'erreur
             res.status(401).render('signin', {
                 response: 'Mot de passe incorrect',
             })
         }
     } else {
-        // Si l'utilisateur n'existe pas, on affiche un message d'erreur
         res.status(401).render('signin', {
             response: 'Utilisateur inexistant',
         })
@@ -96,16 +86,25 @@ const postSignIn = async (req, res) => {
 }
 
 const getSignIn = (req, res) => {
-    res.render('signin')
+    // console.log('getSignin, req.cookies.userID : ', req.cookies.userID)
+    if (req.cookies.access_token)
+        res.redirect(`/api/v1/profile/${req.cookies.userID}`)
+    else res.render('signin')
 }
 
 const getLogout = (req, res) => {
+    res.clearCookie('userID')
+    res.clearCookie('access_token')
+    delete req.cookies.userID
+    delete req.cookies.access_token
+    // res.send('Vous êtes maintenant déconnecté')
     res.redirect('/api/v1')
 }
 module.exports = {
     getHome,
     getRedirectProfile,
     getProfile,
+    getLogout,
     getSignIn,
     getSignUp,
     getLogout,

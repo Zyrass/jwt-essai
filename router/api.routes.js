@@ -7,7 +7,7 @@ router.get('/signin', UserController.getSignIn)
 router.get('/signup', UserController.getSignUp)
 router.get('/profile', UserController.getRedirectProfile)
 router.get('/profile/:id', check.authenticated, UserController.getProfile)
-router.get('/logout', UserController.getHome)
+router.get('/logout', UserController.getLogout)
 
 router.post('/signup', UserController.postSignUp)
 router.post('/signin', UserController.postSignIn)
